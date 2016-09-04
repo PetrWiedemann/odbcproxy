@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xs:schema xmlns:i="http://www.w3.org/2001/XMLSchema-instance" xmlns:xs="http://www.w3.org/2001/XMLSchema" attributeFormDefault="unqualified" elementFormDefault="qualified">
+  <xs:element name="ConnectRequest">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="ConnectionString" type="xs:string" />
+        <xs:element name="UsingOleDb" type="xs:boolean" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="SelectRequest">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="ConnectionID" type="xs:string" />
+        <xs:element name="Query" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="CloseRequest">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="ConnectionID" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="ExecuteRequest">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="ConnectionID" type="xs:string" />
+        <xs:element name="Query" type="xs:string" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="ConnectResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="ConnectionAutoCloseTime" type="xs:dateTime" />
+        <xs:element name="ConnectionID" type="xs:string" />
+        <xs:element name="Error" type="xs:string" nillable="true" />
+        <xs:element name="Success" type="xs:boolean" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:complexType name="Value">
+    <xs:simpleContent>
+      <xs:extension base="xs:string">
+        <xs:attribute name="type" type="xs:string" form="unqualified" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
+  
+  <xs:complexType name="Column">
+    <xs:sequence>
+      <xs:element name="Header" type="xs:string" />
+      <xs:element name="Value" nillable="true" type="Value" />
+    </xs:sequence>
+  </xs:complexType>
+  
+  <xs:complexType name="Row">
+    <xs:sequence>
+        <xs:element maxOccurs="unbounded" name="Column" type="Column">
+        </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  
+  <xs:complexType name="Rows">
+    <xs:sequence>
+        <xs:element maxOccurs="unbounded" name="Row" type="Row">
+        </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+  
+  <xs:element name="SelectResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="ConnectionAutoCloseTime" type="xs:dateTime" />
+        <xs:element name="Error" type="xs:string" nillable="true" />
+        <xs:element name="Rows" type="Rows">
+        </xs:element>
+        <xs:element name="Success" type="xs:boolean" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+  <xs:element name="CloseResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="Error" type="xs:string" nillable="true" />
+        <xs:element name="Success" type="xs:boolean" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="ExecuteResponse">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="AffectedRows" type="xs:integer" />
+        <xs:element name="ConnectionAutoCloseTime" type="xs:dateTime" />
+        <xs:element name="Error" type="xs:string" nillable="true" />
+        <xs:element name="Success" type="xs:boolean" />
+      </xs:sequence>
+    </xs:complexType>
+  </xs:element>
+  
+</xs:schema>
