@@ -102,15 +102,18 @@
   <ItemGroup>
     <Compile Include="CloseRequest.cs" />
     <Compile Include="CloseResponse.cs" />
+    <Compile Include="CompressionMessageInspector.cs" />
     <Compile Include="ConnectRequest.cs" />
     <Compile Include="ConnectResponse.cs" />
     <Compile Include="ExecuteRequest.cs" />
     <Compile Include="ExecuteResponse.cs" />
+    <Compile Include="GZipEncoder.cs" />
     <Compile Include="IncludeXmlDeclarationAttribute.cs" />
     <Compile Include="IOdbcProxyService.cs" />
     <Compile Include="OdbcConnectionPool.cs" />
     <Compile Include="OdbcProxyService.cs" />
     <Compile Include="Options.cs" />
+    <Compile Include="StatusResponse.cs" />
     <Compile Include="PooledOdbcConnection.cs" />
     <Compile Include="OdbcProxy.cs">
     </Compile>

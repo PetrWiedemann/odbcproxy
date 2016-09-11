@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using net.pdnyet.odbcproxy;
 using System.ServiceModel.Web;
 using System.ServiceModel;
 using NDesk.Options;
 using System.ServiceProcess;
 using System.IO;
+using System.ServiceModel.Channels;
+using System.ServiceModel.Description;
 
 namespace net.pdynet.odbcproxy
 {
@@ -17,11 +18,11 @@ namespace net.pdynet.odbcproxy
         //http://www.iana.org/assignments/service-names-port-numbers/service-names-port-numbers.xhtml?&page=128
         int port = 47115;
 
-        WebServiceHost sh = null;
+        //WebServiceHost sh = null;
+        ServiceHost sh = null;
 
         static void Main(string[] args)
         {
-            //File.AppendAllText(@"D:\projekty_VS2008\.NET\odbcproxy\odbcproxy\bin\Debug\debug.log", "in main" + Environment.NewLine);
             OdbcProxy odbcProxy = new OdbcProxy();
             if (Environment.UserInteractive)
             {
@@ -41,7 +42,6 @@ namespace net.pdynet.odbcproxy
         protected override void OnStart(string[] args)
         {
             base.OnStart(args);
-            //File.AppendAllText(@"D:\projekty_VS2008\.NET\odbcproxy\odbcproxy\bin\Debug\debug.log", "in onstart" + Environment.NewLine);
             StartWebService(args);
         }
 
@@ -51,6 +51,25 @@ namespace net.pdynet.odbcproxy
                 sh.Close();
 
             base.OnStop();
+        }
+
+        private Binding GetBinding()
+        {
+            CustomBinding custom = new CustomBinding(new WebHttpBinding());
+            for (int i = 0; i < custom.Elements.Count; i++)
+            {
+                if (custom.Elements[i] is WebMessageEncodingBindingElement)
+                {
+                    WebMessageEncodingBindingElement webBE = (WebMessageEncodingBindingElement)custom.Elements[i];
+                    custom.Elements[i] = new GZipMessageEncodingBindingElement(webBE);
+                }
+                else if (custom.Elements[i] is TransportBindingElement)
+                {
+                    ((TransportBindingElement)custom.Elements[i]).MaxReceivedMessageSize = int.MaxValue;
+                }
+            }
+
+            return custom;
         }
 
         private void StartWebService(string[] args)
@@ -66,7 +85,13 @@ namespace net.pdynet.odbcproxy
             ub.Port = port;
             ub.Path = "odbcproxy";
 
-            sh = new WebServiceHost(typeof(OdbcProxyService), ub.Uri);
+            //sh = new WebServiceHost(typeof(OdbcProxyService), ub.Uri);
+            sh = new ServiceHost(typeof(OdbcProxyService), ub.Uri);
+
+            ServiceEndpoint ep = sh.AddServiceEndpoint(typeof(IOdbcProxyService), GetBinding(), "");
+            ep.EndpointBehaviors.Add(new WebHttpBehavior { HelpEnabled = true, AutomaticFormatSelectionEnabled = false });
+            ep.EndpointBehaviors.Add(new CompressionEndpointBehavior());
+
             sh.Open();
         }
 

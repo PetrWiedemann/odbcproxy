@@ -86,14 +86,14 @@ namespace net.pdynet.odbcproxy
         {
             lock (olock)
             {
-                PooledOdbcConnection pooledOdbcConnection = connections[connectionID];
-                connections.Remove(connectionID);
-
-                if (pooledOdbcConnection.OdbcConnection != null)
-                    pooledOdbcConnection.OdbcConnection.Close();
-
-                if (pooledOdbcConnection.OleDbConnection != null)
-                    pooledOdbcConnection.OleDbConnection.Close();
+                if (connections.ContainsKey(connectionID))
+                {
+                    PooledOdbcConnection pooledOdbcConnection = connections[connectionID];
+                    connections.Remove(connectionID);
+                    CloseConnection(pooledOdbcConnection);
+                }
+                else
+                    throw new ArgumentException("Connection ID (" + connectionID + ") not found in connection pool.");
             }
         }
 
@@ -103,12 +103,29 @@ namespace net.pdynet.odbcproxy
 
             lock (olock)
             {
-                connection = connections[connectionID];
-                DateTime connectionAutoCloseTime = DateTime.Now.AddMinutes(5);
-                connection.ConnectionAutoCloseTime = connectionAutoCloseTime;
+                if (connections.ContainsKey(connectionID))
+                {
+                    connection = connections[connectionID];
+                    DateTime connectionAutoCloseTime = DateTime.Now.AddMinutes(5);
+                    connection.ConnectionAutoCloseTime = connectionAutoCloseTime;
+                }
+                else
+                    throw new ArgumentException("Connection ID (" + connectionID + ") not found in connection pool.");
             }
 
             return connection;
+        }
+
+        public int GetActiveConnectionsCount()
+        {
+            int count = 0;
+
+            lock (olock)
+            {
+                count = connections.Count;
+            }
+
+            return count;
         }
 
         public static string GetOdbcError(OdbcException e)
@@ -146,23 +163,27 @@ namespace net.pdynet.odbcproxy
 
                 foreach (var abandonedConnection in abandonedConnections)
                 {
+                    connections.Remove(abandonedConnection.ID);
+
                     try
                     {
-                        if (abandonedConnection.OdbcConnection != null)
-                            abandonedConnection.OdbcConnection.Close();
-
-                        if (abandonedConnection.OleDbConnection != null)
-                            abandonedConnection.OleDbConnection.Close();
+                        CloseConnection(abandonedConnection);
                     }
                     catch (Exception x)
                     {
                         Console.WriteLine(x.ToString());
                     }
-
-                    connections.Remove(abandonedConnection.ID);
-                    //Console.WriteLine("removing connection " + abandonedConnection.ID);
                 }
             }
+        }
+
+        private void CloseConnection(PooledOdbcConnection pooledOdbcConnection)
+        {
+            if (pooledOdbcConnection.OdbcConnection != null)
+                pooledOdbcConnection.OdbcConnection.Close();
+
+            if (pooledOdbcConnection.OleDbConnection != null)
+                pooledOdbcConnection.OleDbConnection.Close();
         }
     }
 }

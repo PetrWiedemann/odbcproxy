@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using net.pdynet.odbcproxy;
-using System.ServiceModel;
+﻿using System.ServiceModel;
 using System.ServiceModel.Web;
 
-namespace net.pdnyet.odbcproxy
+namespace net.pdynet.odbcproxy
 {
     [ServiceContract]
     public interface IOdbcProxyService
@@ -46,5 +41,12 @@ namespace net.pdnyet.odbcproxy
             BodyStyle = WebMessageBodyStyle.Bare)]
         [IncludeXmlDeclaration]
         ExecuteResponse ExecuteCommand(ExecuteRequest request);
+
+        [OperationContract]
+        [WebGet(UriTemplate = "/status",
+            ResponseFormat = WebMessageFormat.Xml,
+            BodyStyle = WebMessageBodyStyle.Bare)]
+        [IncludeXmlDeclaration]
+        StatusResponse Status();
     }
 }

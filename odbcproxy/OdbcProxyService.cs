@@ -14,7 +14,6 @@ using System.ServiceModel.Web;
 using System.Text;
 using System.Xml.Schema;
 using System.Xml.Serialization;
-using net.pdnyet.odbcproxy;
 
 namespace net.pdynet.odbcproxy
 {
@@ -29,9 +28,6 @@ namespace net.pdynet.odbcproxy
         [SecurityCritical]
         public ConnectResponse Connect(ConnectRequest request)
         {
-            //WebOperationContext ctx = WebOperationContext.Current;
-            //ctx.OutgoingResponse.StatusCode = System.Net.HttpStatusCode.NoContent;
-
             ConnectResponse response = new ConnectResponse();
             
             // Overeni, zda byl zadan Connection string;
@@ -194,7 +190,6 @@ namespace net.pdynet.odbcproxy
             }
             else
             {
-                //Console.WriteLine(request.Query);
                 try
                 {
                     PooledOdbcConnection pooledOdbcConnection = OdbcConnectionPool.Instance.GetConnection(request.ConnectionID);
@@ -233,6 +228,14 @@ namespace net.pdynet.odbcproxy
                 }
             }
 
+            return response;
+        }
+
+        public StatusResponse Status()
+        {
+            StatusResponse response = new StatusResponse();
+            response.Now = DateTime.Now;
+            response.ActiveConnections = OdbcConnectionPool.Instance.GetActiveConnectionsCount();
             return response;
         }
 
@@ -347,10 +350,6 @@ namespace net.pdynet.odbcproxy
                 {
                     var n = System.Enum.GetName(typeof(XmlTypeCode), it);
                     Console.WriteLine(n);
-
-                    //System.Enum.Parse(typeof(XmlTypeCode), k
-                    //Console.WriteLine(System.Enum.Parse(typeof(XmlTypeCode), key, true).ToString());
-                    //it.
                 }
             }
         }
@@ -373,38 +372,5 @@ namespace net.pdynet.odbcproxy
                     type == typeof(Int32) ||
                     type == typeof(UInt32));
         }
-
-        /*
-        protected void CompressResponseStream(WebOperationContext context)
-        {
-            if (context == null)
-                context = WebOperationContext.Current;
-
-            string encodings = context.IncomingRequest.Headers.Get("Accept-Encoding");
-
-            if (!String.IsNullOrEmpty(encodings))
-            {
-                encodings = encodings.ToLowerInvariant();
-
-                if (encodings.Contains("deflate"))
-                {
-                    //context.OutgoingRequest.
-                    context.Response.Filter = new DeflateStream(context.Response.Filter, CompressionMode.Compress);
-                    context.Response.AppendHeader("Content-Encoding", "deflate");
-                    context.Response.AppendHeader("X-CompressResponseStream", "deflate");
-                }
-                else if (encodings.Contains("gzip"))
-                {
-                    context.Response.Filter = new GZipStream(context.Response.Filter, CompressionMode.Compress);
-                    context.Response.AppendHeader("Content-Encoding", "gzip");
-                    context.Response.AppendHeader("X-CompressResponseStream", "gzip");
-                }
-                else
-                {
-                    context.Response.AppendHeader("X-CompressResponseStream", "no-known-accept");
-                }
-            }
-        }
-        */
     }
 }
